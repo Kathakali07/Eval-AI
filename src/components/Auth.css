@@ -1,0 +1,200 @@
+.login-page * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Turret Road', sans-serif;
+}
+
+.login-page {
+    background-color: #f8fafc;
+    background-image:
+        radial-gradient(at 0% 0%, hsla(253, 16%, 95%, 1) 0, transparent 50%),
+        radial-gradient(at 100% 100%, hsla(225, 39%, 95%, 1) 0, transparent 50%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #1e293b;
+    overflow-x: hidden;
+}
+
+.login-page .login-container {
+    width: 100%;
+    max-width: 900px;
+    padding: 1.5rem;
+}
+
+.login-page .glass-card {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 20px;
+    padding: 3rem 3rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    animation: fadeIn 0.5s ease-out;
+}
+
+.login-page .brand {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.login-page .brand-icon {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.login-page .brand h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #1e293b;
+    letter-spacing: -0.01em;
+}
+
+.login-page .brand p {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+}
+
+.login-page .form-group {
+    margin-bottom: 1.25rem;
+}
+
+.login-page .form-group label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    color: #1e293b;
+}
+
+.login-page .input-wrapper {
+    position: relative;
+}
+
+.login-page .input-wrapper i {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    display: flex;
+    align-items: center;
+}
+
+.login-page .input-wrapper input {
+    width: 100%;
+    padding: 0.75rem 1rem 0.75rem 2.75rem;
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    transition: all 0.2s ease;
+    color: #1e293b;
+}
+
+.login-page .input-wrapper input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 4px #4f46e522;
+}
+
+.login-page .options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 1.5rem 0 2rem;
+    font-size: 0.875rem;
+}
+
+.login-page .remember-me {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    cursor: pointer;
+}
+
+.login-page .remember-me input {
+    width: 1rem;
+    height: 1rem;
+    border-radius: 4px;
+    border: 1px solid #e2e8f0;
+    cursor: pointer;
+}
+
+.login-page .forgot-password {
+    color: rgb(119, 131, 208);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-page .forgot-password:hover {
+    text-decoration: underline;
+}
+
+.login-page .btn-primary {
+    width: 100%;
+    padding: 0.875rem;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.login-page .btn-primary:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+}
+
+.login-page .btn-primary:active {
+    transform: translateY(0);
+}
+
+.login-page .footer-text {
+    text-align: center;
+    margin-top: 1.5rem;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.login-page .footer-text a {
+    color: rgb(119, 131, 208);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.login-page .footer-text a:hover {
+    text-decoration: underline;
+}
+
+.login-page .bg-decor {
+    display: none;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
