@@ -1,7 +1,7 @@
 package com.evalai.backend.dto;
 
 public record PythonOcrResponse(
-        String status,
-        String document_type,
-        String structured_data // This contains the stringified JSON array
-) {}
+                String status,
+                String document_type,
+                String structured_data) {
+}

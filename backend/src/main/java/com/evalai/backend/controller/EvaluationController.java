@@ -10,7 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 @RestController
 @RequestMapping("/api/evaluate")
-@CrossOrigin(origins = "*") // Crucial for your React frontend to avoid CORS errors
+@CrossOrigin(origins = "*")
 public class EvaluationController {
 
     private final EvaluationOrchestrator evaluationOrchestrator;
@@ -20,9 +20,8 @@ public class EvaluationController {
     }
 
     /**
-     * THE FULL DOCUMENT GRADING ENDPOINT
-     * React hits this endpoint with ONLY the student's handwritten image and the subject.
-     * The AI handles mapping the questions automatically.
+     * Grades a student's handwritten exam against the ingested model answers for
+     * the given subject.
      */
     @PostMapping(value = "/grade-student", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<?> gradeStudent(
@@ -34,24 +33,18 @@ public class EvaluationController {
                 return ResponseEntity.badRequest().body("Error: No file uploaded.");
             }
 
-            System.out.println("\n--- API Gateway: Received grading request for subject: " + subjectArea + " ---");
-
-            // Pass the raw file and subject directly to the master orchestrator.
-            // It now returns a complete Report Card for the entire exam.
-            ReportCardDTO finalReportCard = evaluationOrchestrator.processAndGradeStudentUpload(
+            ReportCardDTO reportCard = evaluationOrchestrator.processAndGradeStudentUpload(
                     subjectArea,
-                    studentFile
-            );
+                    studentFile);
 
-            // Return the final JSON Report Card to React
-            return ResponseEntity.ok(finalReportCard);
+            return ResponseEntity.ok(reportCard);
 
         } catch (RuntimeException e) {
-            System.err.println("Evaluation Pipeline Failed: " + e.getMessage());
+            System.err.println("Evaluation failed: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Pipeline Error: " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Unexpected Server Error: " + e.getMessage());
+            System.err.println("Unexpected error: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("An unexpected error occurred processing the exam.");
         }

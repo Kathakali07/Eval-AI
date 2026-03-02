@@ -17,10 +17,10 @@ public class IngestionOrchestrator {
     private final RestClient restClient;
     private final ModelAnswerRepository mongoRepository;
     private final KnowledgeGraphService neo4jService;
-    private final ObjectMapper objectMapper; // Spring's built-in JSON parser
+    private final ObjectMapper objectMapper;
 
     public IngestionOrchestrator(ModelAnswerRepository mongoRepository,
-                                 KnowledgeGraphService neo4jService) {
+            KnowledgeGraphService neo4jService) {
         this.mongoRepository = mongoRepository;
         this.neo4jService = neo4jService;
         this.objectMapper = new ObjectMapper();
@@ -30,21 +30,18 @@ public class IngestionOrchestrator {
     }
 
     /**
-     * THE MASTER INGESTION PIPELINE: Image -> OCR Array -> Loop -> Vectors/Graphs
+     * Full ingestion pipeline: OCR the teacher paper, vectorize each Q&A, and store
+     * in MongoDB + Neo4j.
      */
     public void processFullTeacherPaper(String subjectArea, MultipartFile modelPaperFile) {
-
-        System.out.println("--- STARTING FULL EXAM INGESTION ---");
-
         try {
-            // STEP 1: OCR - Extract the entire paper into structured JSON
-            System.out.println("1. Sending exam paper to Vision AI...");
+            // Step 1: OCR extraction
             MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
             body.add("file", modelPaperFile.getResource());
-            body.add("document_type", "teacher"); // Tells Python to use the Teacher schema
+            body.add("document_type", "teacher");
 
             PythonOcrResponse ocrResponse = restClient.post()
-                    .uri("/read") // Make sure this matches your read_api.py router
+                    .uri("/read")
                     .contentType(MediaType.MULTIPART_FORM_DATA)
                     .body(body)
                     .retrieve()
@@ -54,19 +51,15 @@ public class IngestionOrchestrator {
                 throw new RuntimeException("OCR extraction failed.");
             }
 
-            // STEP 2: Parse the stringified JSON into our Java DTO
+            // Step 2: Parse structured data
             TeacherExtractionDTO extraction = objectMapper.readValue(
                     ocrResponse.structured_data(),
-                    TeacherExtractionDTO.class
-            );
+                    TeacherExtractionDTO.class);
 
-            System.out.println("2. Extracted " + extraction.qa_pairs().size() + " questions. Starting ingestion loop...");
-
-            // STEP 3: Loop through EVERY question in the exam paper
+            // Step 3: Process each question
             for (QAPairDTO qa : extraction.qa_pairs()) {
-                System.out.println("\n--- Processing Question " + qa.question_number() + " ---");
 
-                // 3a. Call Python to convert the teacher's answer into math vectors and graph triplets
+                // Vectorize the model answer
                 PythonIngestResponse aiResponse = restClient.post()
                         .uri("/ingest/process-text")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -74,34 +67,28 @@ public class IngestionOrchestrator {
                         .retrieve()
                         .body(PythonIngestResponse.class);
 
-                // 3b. Save to MongoDB using our new fields (Question Number & Max Marks)
+                // Persist to MongoDB
                 ModelAnswer savedAnswer = new ModelAnswer(
                         subjectArea,
                         qa.question_number(),
                         qa.question_text(),
                         qa.model_answer(),
-                        qa.max_marks() != null ? qa.max_marks() : 5.0, // Default to 5 if AI misses it
-                        aiResponse.vector_embedding()
-                );
+                        qa.max_marks() != null ? qa.max_marks() : 5.0,
+                        aiResponse.vector_embedding());
                 mongoRepository.save(savedAnswer);
-                System.out.println("   -> Saved Vector to MongoDB.");
 
-                // 3c. Weave the facts into the Neo4j Global Brain
+                // Insert knowledge graph triplets into Neo4j
                 for (TripletDTO triplet : aiResponse.triplets()) {
                     neo4jService.insertTriplet(
                             triplet.subject(),
                             triplet.predicate(),
                             triplet.object(),
-                            subjectArea
-                    );
+                            subjectArea);
                 }
-                System.out.println("   -> Merged facts into Neo4j.");
             }
 
-            System.out.println("\n--- INGESTION COMPLETE ---");
-
         } catch (Exception e) {
-            System.err.println("Pipeline failed: " + e.getMessage());
+            System.err.println("Ingestion pipeline failed: " + e.getMessage());
             throw new RuntimeException("Ingestion failed", e);
         }
     }

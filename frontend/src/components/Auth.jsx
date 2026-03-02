@@ -1,12 +1,16 @@
 import React, { useState } from 'react';
-import { Mail, Lock, LogIn, GraduationCap, User, UserPlus } from 'lucide-react';
+import { Mail, Lock, LogIn, User, UserPlus, Loader } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import logo from './Eval-AI-Logo-only.png';
 import './Auth.css';
 
 const Auth = ({ defaultSignup = false }) => {
     const navigate = useNavigate();
+    const { login, register } = useAuth();
     const [isLogin, setIsLogin] = useState(!defaultSignup);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
     const [formData, setFormData] = useState({
         username: '',
         email: '',
@@ -16,32 +20,42 @@ const Auth = ({ defaultSignup = false }) => {
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(null);
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setError(null);
 
-        if (!isLogin && formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match!");
+        if (!formData.email || !formData.password) {
+            setError('Please fill in all required fields.');
             return;
         }
 
-        // Temporary: skip backend, go directly to dashboard
-        navigate('/dashboard');
-    };
+        if (!isLogin && formData.password !== formData.confirmPassword) {
+            setError('Passwords do not match.');
+            return;
+        }
 
-    const handleForgotPassword = (e) => {
-        e.preventDefault();
-        // ─────────────────────────────────────────
-        // TODO: Backend forgot password API call goes here
-        // e.g. await axios.post('/api/auth/forgot-password', {
-        //     email: formData.email
-        // });
-        // ─────────────────────────────────────────
+        setLoading(true);
+
+        try {
+            if (isLogin) {
+                await login(formData.email, formData.password);
+            } else {
+                await register(formData.username, formData.email, formData.password);
+            }
+            navigate('/dashboard');
+        } catch (err) {
+            setError(err.message);
+        } finally {
+            setLoading(false);
+        }
     };
 
     const toggleAuth = () => {
         setIsLogin(!isLogin);
+        setError(null);
         setFormData({
             username: '',
             email: '',
@@ -49,37 +63,6 @@ const Auth = ({ defaultSignup = false }) => {
             confirmPassword: ''
         });
     };
-
-    /* const handleSubmit = async (e) => {
-        e.preventDefault();
-
-        if (!isLogin && formData.password !== formData.confirmPassword) {
-            alert("Passwords do not match!");
-            return;
-        }
-
-        if (isLogin) {
-            // ─────────────────────────────────────────
-            // TODO: Backend login API call goes here
-            // e.g. await axios.post('/api/auth/login', {
-            //     email: formData.email,
-            //     password: formData.password
-            // });
-            // ─────────────────────────────────────────
-            navigate('/dashboard');
-        } else {
-            // ─────────────────────────────────────────
-            // TODO: Backend signup API call goes here
-            // e.g. await axios.post('/api/auth/signup', {
-            //     username: formData.username,
-            //     email: formData.email,
-            //     password: formData.password
-            // });
-            // ─────────────────────────────────────────
-            navigate('/dashboard');
-        }
-    };
-    */
 
     return (
         <div className="login-page">
@@ -99,20 +82,27 @@ const Auth = ({ defaultSignup = false }) => {
                         <p>{isLogin ? 'Sign in to continue to EvalAI' : 'Join EvalAI today'}</p>
                     </div>
 
+                    {error && (
+                        <div className="auth-error">
+                            {error}
+                        </div>
+                    )}
+
                     <div className="auth-form">
 
                         {!isLogin && (
                             <div className="form-group">
-                                <label>Username</label>
+                                <label>Full Name</label>
                                 <div className="input-wrapper">
                                     <i><User size={18} /></i>
                                     <input
                                         name="username"
                                         type="text"
-                                        placeholder="Your username"
+                                        placeholder="Your full name"
                                         value={formData.username}
                                         onChange={handleChange}
                                         required
+                                        disabled={loading}
                                     />
                                 </div>
                             </div>
@@ -125,10 +115,11 @@ const Auth = ({ defaultSignup = false }) => {
                                 <input
                                     name="email"
                                     type="email"
-                                    placeholder="123@gmail.com"
+                                    placeholder="you@email.com"
                                     value={formData.email}
                                     onChange={handleChange}
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -144,6 +135,7 @@ const Auth = ({ defaultSignup = false }) => {
                                     value={formData.password}
                                     onChange={handleChange}
                                     required
+                                    disabled={loading}
                                 />
                             </div>
                         </div>
@@ -160,24 +152,18 @@ const Auth = ({ defaultSignup = false }) => {
                                         value={formData.confirmPassword}
                                         onChange={handleChange}
                                         required
+                                        disabled={loading}
                                     />
                                 </div>
                             </div>
                         )}
 
-                        {isLogin && (
-                            <div className="options">
-                                <label className="remember-me">
-                                    <input type="checkbox" />
-                                    <span>Remember me</span>
-                                </label>
-                                <a href="#" className="forgot-password" onClick={handleForgotPassword}>Forgot password?</a>
-                            </div>
-                        )}
-
-                        <button className="btn-primary" onClick={handleSubmit}>
-                            {isLogin ? <LogIn size={18} /> : <UserPlus size={18} />}
-                            {isLogin ? 'Sign In' : 'Sign Up'}
+                        <button className="btn-primary" onClick={handleSubmit} disabled={loading}>
+                            {loading ? (
+                                <><Loader size={18} className="spin" /> Processing...</>
+                            ) : (
+                                <>{isLogin ? <LogIn size={18} /> : <UserPlus size={18} />} {isLogin ? 'Sign In' : 'Sign Up'}</>
+                            )}
                         </button>
 
                     </div>

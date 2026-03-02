@@ -10,6 +10,6 @@ public interface ModelAnswerRepository extends MongoRepository<ModelAnswer, Stri
 
     List<ModelAnswer> findBySubject(String subject);
 
-    List<ModelAnswer> findByQuestion(String question);
+    ModelAnswer findBySubjectAndQuestionNumber(String subject, String questionNumber);
 
 }
