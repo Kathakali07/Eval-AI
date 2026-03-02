@@ -35,7 +35,6 @@ const Footer = () => {
             <div className="container">
                 <div className="footer-content">
 
-                    {/* ── Brand + Team ── */}
                     <div className="footer-brand">
                         <a href="/" className="logo footer-logo">
                             <span className="logo-text">
@@ -67,7 +66,6 @@ const Footer = () => {
                         </div>
                     </div>
 
-                    {/* ── Product ── */}
                     <div className="footer-links-group">
                         <h4 className="footer-heading">PRODUCT</h4>
                         <a href="#features" className="footer-link">Features</a>
@@ -76,7 +74,6 @@ const Footer = () => {
                         <a href="/api" className="footer-link">API Docs</a>
                     </div>
 
-                    {/* ── Company ── */}
                     <div className="footer-links-group">
                         <h4 className="footer-heading">COMPANY</h4>
                         <a href="/about" className="footer-link">About Us</a>
@@ -85,7 +82,6 @@ const Footer = () => {
                         <a href="/contact" className="footer-link">Contact</a>
                     </div>
 
-                    {/* ── Legal ── */}
                     <div className="footer-links-group">
                         <h4 className="footer-heading">LEGAL</h4>
                         <a href="/privacy" className="footer-link">Privacy Policy</a>

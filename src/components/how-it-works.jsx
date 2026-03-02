@@ -42,7 +42,6 @@ const HowItWorks = () => {
                 </div>
 
                 <div className="steps-container">
-                    {/* Decorative connector line */}
                     <div className="steps-connector"></div>
 
                     {steps.map((step, index) => (

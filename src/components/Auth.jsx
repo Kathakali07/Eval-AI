@@ -26,26 +26,8 @@ const Auth = ({ defaultSignup = false }) => {
             return;
         }
 
-        if (isLogin) {
-            // ─────────────────────────────────────────
-            // TODO: Backend login API call goes here
-            // e.g. await axios.post('/api/auth/login', {
-            //     email: formData.email,
-            //     password: formData.password
-            // });
-            // ─────────────────────────────────────────
-            navigate('/dashboard');
-        } else {
-            // ─────────────────────────────────────────
-            // TODO: Backend signup API call goes here
-            // e.g. await axios.post('/api/auth/signup', {
-            //     username: formData.username,
-            //     email: formData.email,
-            //     password: formData.password
-            // });
-            // ─────────────────────────────────────────
-            navigate('/dashboard');
-        }
+        // Temporary: skip backend, go directly to dashboard
+        navigate('/dashboard');
     };
 
     const handleForgotPassword = (e) => {
@@ -53,7 +35,7 @@ const Auth = ({ defaultSignup = false }) => {
         // ─────────────────────────────────────────
         // TODO: Backend forgot password API call goes here
         // e.g. await axios.post('/api/auth/forgot-password', {
-        //     email: formData.email
+        //     email: formData.email
         // });
         // ─────────────────────────────────────────
     };
@@ -68,15 +50,47 @@ const Auth = ({ defaultSignup = false }) => {
         });
     };
 
+    /* const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        if (!isLogin && formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match!");
+            return;
+        }
+
+        if (isLogin) {
+            // ─────────────────────────────────────────
+            // TODO: Backend login API call goes here
+            // e.g. await axios.post('/api/auth/login', {
+            //     email: formData.email,
+            //     password: formData.password
+            // });
+            // ─────────────────────────────────────────
+            navigate('/dashboard');
+        } else {
+            // ─────────────────────────────────────────
+            // TODO: Backend signup API call goes here
+            // e.g. await axios.post('/api/auth/signup', {
+            //     username: formData.username,
+            //     email: formData.email,
+            //     password: formData.password
+            // });
+            // ─────────────────────────────────────────
+            navigate('/dashboard');
+        }
+    };
+    */
+
     return (
         <div className="login-page">
-            <div className="bg-decor decor-1"></div>
-            <div className="bg-decor decor-2"></div>
+            <div className="bg-decor">
+                <div className="glow-orb orb-1"></div>
+                <div className="glow-orb orb-2"></div>
+            </div>
 
             <div className="login-container">
                 <div className="glass-card">
 
-                    {/* ── Brand ── */}
                     <div className="brand">
                         <div className="brand-icon">
                             <img src={logo} alt="Eval AI Logo" style={{ width: '80px', height: '80px', objectFit: 'contain' }} />
@@ -85,10 +99,8 @@ const Auth = ({ defaultSignup = false }) => {
                         <p>{isLogin ? 'Sign in to continue to EvalAI' : 'Join EvalAI today'}</p>
                     </div>
 
-                    {/* ── Form ── */}
                     <div className="auth-form">
 
-                        {/* Username — signup only */}
                         {!isLogin && (
                             <div className="form-group">
                                 <label>Username</label>
@@ -106,7 +118,6 @@ const Auth = ({ defaultSignup = false }) => {
                             </div>
                         )}
 
-                        {/* Email */}
                         <div className="form-group">
                             <label>Email Address</label>
                             <div className="input-wrapper">
@@ -122,7 +133,6 @@ const Auth = ({ defaultSignup = false }) => {
                             </div>
                         </div>
 
-                        {/* Password */}
                         <div className="form-group">
                             <label>Password</label>
                             <div className="input-wrapper">
@@ -138,7 +148,6 @@ const Auth = ({ defaultSignup = false }) => {
                             </div>
                         </div>
 
-                        {/* Confirm Password — signup only */}
                         {!isLogin && (
                             <div className="form-group">
                                 <label>Confirm Password</label>
@@ -156,7 +165,6 @@ const Auth = ({ defaultSignup = false }) => {
                             </div>
                         )}
 
-                        {/* Remember me & Forgot password — login only */}
                         {isLogin && (
                             <div className="options">
                                 <label className="remember-me">
@@ -167,7 +175,6 @@ const Auth = ({ defaultSignup = false }) => {
                             </div>
                         )}
 
-                        {/* Submit */}
                         <button className="btn-primary" onClick={handleSubmit}>
                             {isLogin ? <LogIn size={18} /> : <UserPlus size={18} />}
                             {isLogin ? 'Sign In' : 'Sign Up'}
@@ -175,7 +182,6 @@ const Auth = ({ defaultSignup = false }) => {
 
                     </div>
 
-                    {/* ── Toggle Login / Signup ── */}
                     <p className="footer-text">
                         {isLogin ? "Don't have an account?" : "Already have an account?"}
                         <a href="#" onClick={(e) => { e.preventDefault(); toggleAuth(); }}>{isLogin ? ' Sign Up' : ' Sign In'}</a>

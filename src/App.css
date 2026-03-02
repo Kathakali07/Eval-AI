@@ -1,5 +1,9 @@
 .App {
   text-align: center;
+  /* Apply the ombré effect here */
+  background: radial-gradient(circle, var(--accent-primary) 0%, var(--accent-secondary) 70%, transparent 100%);
+  min-height: 100vh;
+  /* Ensure it takes full viewport height */
 }
 
 .App-logo {
@@ -14,7 +18,7 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color: rgba(0, 0, 0, 0.1); /* Optional: slight transparency to show ombré behind */
   min-height: 100vh;
   display: flex;
   flex-direction: column;

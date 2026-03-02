@@ -4,7 +4,6 @@
     padding-top: 4rem;
 }
 
-/* ── Footer Grid ── */
 .footer-content {
     display: flex;
     justify-content: center;
@@ -15,7 +14,6 @@
     flex-wrap: wrap;
 }
 
-/* ── Brand + Team ── */
 .footer-brand {
     display: flex;
     flex-direction: column;
@@ -29,7 +27,6 @@
     margin-bottom: 1rem;
 }
 
-/* ── Link Groups ── */
 .footer-links-group {
     display: flex;
     flex-direction: column;
@@ -59,7 +56,6 @@
     color: var(--accent-primary);
 }
 
-/* ── Team Section ── */
 .team-section {
     width: 100%;
     margin-bottom: 0.5rem;
@@ -137,7 +133,6 @@
     box-shadow: 0 4px 10px 0 var(--accent-glow);
 }
 
-/* ── Footer Bottom ── */
 .footer-bottom {
     padding: 2rem 0;
     text-align: center;
@@ -145,7 +140,6 @@
     font-size: 0.875rem;
 }
 
-/* ── Responsive ── */
 @media (max-width: 1024px) {
     .footer-content {
         gap: 2.5rem;

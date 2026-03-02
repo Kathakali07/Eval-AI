@@ -6,6 +6,7 @@ import Description from './components/Description';
 import Features from './components/features';
 import HowItWorks from './components/how-it-works';
 import Footer from './components/footer';
+import Dashboard from './components/Dashboard';
 
 const Home = () => (
     <div className="app-container">
@@ -26,6 +27,7 @@ function App() {
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Auth />} />
                 <Route path="/signup" element={<Auth defaultSignup={true} />} />
+                <Route path="/dashboard" element={<Dashboard />} />
             </Routes>
         </BrowserRouter>
     );
