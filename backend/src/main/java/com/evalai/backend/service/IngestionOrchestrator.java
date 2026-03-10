@@ -8,6 +8,9 @@ import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestClient;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -51,6 +54,14 @@ public class IngestionOrchestrator {
                 throw new RuntimeException("OCR extraction failed.");
             }
 
+            // Confidence check — hard-reject if the AI couldn't read the document clearly
+            if (ocrResponse.confidence_score() != null && ocrResponse.confidence_score() < 0.7) {
+                throw new RuntimeException(String.format(
+                        "The teacher's paper could not be read clearly enough (confidence: %.0f%%, minimum required: 70%%). "
+                                + "Please rescan the document with better lighting or higher resolution.",
+                        ocrResponse.confidence_score() * 100));
+            }
+
             // Step 2: Parse structured data
             TeacherExtractionDTO extraction = objectMapper.readValue(
                     ocrResponse.structured_data(),
@@ -74,7 +85,11 @@ public class IngestionOrchestrator {
                         qa.question_text(),
                         qa.model_answer(),
                         qa.max_marks() != null ? qa.max_marks() : 5.0,
-                        aiResponse.vector_embedding());
+                        aiResponse.vector_embedding(),
+                        qa.contains_math() != null ? qa.contains_math() : false,
+                        qa.has_diagram() != null ? qa.has_diagram() : false,
+                        qa.diagram_snippet()
+                );
                 mongoRepository.save(savedAnswer);
 
                 // Insert knowledge graph triplets into Neo4j
@@ -87,9 +102,27 @@ public class IngestionOrchestrator {
                 }
             }
 
+        } catch (ResourceAccessException e) {
+            System.err.println("AI Engine unreachable: " + e.getMessage());
+            throw new RuntimeException(
+                    "The AI processing engine is not running. Please start the Python AI service and try again.");
+        } catch (HttpClientErrorException e) {
+            System.err.println("AI Engine client error: " + e.getResponseBodyAsString());
+            String detail = e.getResponseBodyAsString();
+            throw new RuntimeException(detail.isEmpty()
+                    ? "The AI engine rejected the request (HTTP " + e.getStatusCode().value() + ")."
+                    : detail);
+        } catch (HttpServerErrorException e) {
+            System.err.println("AI Engine server error: " + e.getResponseBodyAsString());
+            String detail = e.getResponseBodyAsString();
+            throw new RuntimeException(detail.isEmpty()
+                    ? "The AI engine encountered an internal error. Please try again."
+                    : detail);
+        } catch (RuntimeException e) {
+            throw e;
         } catch (Exception e) {
             System.err.println("Ingestion pipeline failed: " + e.getMessage());
-            throw new RuntimeException("Ingestion failed", e);
+            throw new RuntimeException("An unexpected error occurred during ingestion: " + e.getMessage());
         }
     }
 }

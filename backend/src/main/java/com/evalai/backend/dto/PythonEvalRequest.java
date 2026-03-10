@@ -1,9 +1,11 @@
 package com.evalai.backend.dto;
 
-import java.util.List;
-
 public record PythonEvalRequest(
+        String question_number,
         String student_text,
-        List<Double> model_vector,
-        List<TripletDTO> model_triplets
+        String teacher_facts,
+        String teacher_diagram_rubric,
+        Boolean contains_math,
+        Boolean has_diagram,
+        String diagram_snippet
 ) {}

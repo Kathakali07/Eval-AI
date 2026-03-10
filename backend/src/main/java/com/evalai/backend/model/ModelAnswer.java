@@ -30,18 +30,30 @@ public class ModelAnswer {
 
     @Field("vector_embedding")
     private List<Double> vectorEmbedding;
+    
+    @Field("contains_math")
+    private Boolean containsMath;
+    
+    @Field("has_diagram")
+    private Boolean hasDiagram;
+    
+    @Field("diagram_snippet")
+    private String diagramSnippet;
 
 
     public ModelAnswer() {
     }
 
-    public ModelAnswer(String subject, String questionNumber, String question, String answer, Double maxMarks, List<Double> vectorEmbedding) {
+    public ModelAnswer(String subject, String questionNumber, String question, String answer, Double maxMarks, List<Double> vectorEmbedding, Boolean containsMath, Boolean hasDiagram, String diagramSnippet) {
         this.subject = subject;
         this.questionNumber = questionNumber;
         this.question = question;
         this.answer = answer;
         this.maxMarks = maxMarks;
         this.vectorEmbedding = vectorEmbedding;
+        this.containsMath = containsMath;
+        this.hasDiagram = hasDiagram;
+        this.diagramSnippet = diagramSnippet;
     }
 
     public String getId() { return id; }
@@ -64,4 +76,13 @@ public class ModelAnswer {
 
     public List<Double> getVectorEmbedding() { return vectorEmbedding; }
     public void setVectorEmbedding(List<Double> vectorEmbedding) { this.vectorEmbedding = vectorEmbedding; }
+    
+    public Boolean getContainsMath() { return containsMath; }
+    public void setContainsMath(Boolean containsMath) { this.containsMath = containsMath; }
+    
+    public Boolean getHasDiagram() { return hasDiagram; }
+    public void setHasDiagram(Boolean hasDiagram) { this.hasDiagram = hasDiagram; }
+    
+    public String getDiagramSnippet() { return diagramSnippet; }
+    public void setDiagramSnippet(String diagramSnippet) { this.diagramSnippet = diagramSnippet; }
 }

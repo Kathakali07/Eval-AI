@@ -14,7 +14,7 @@ const Description = () => {
                 <div className="Desc-content">
                     <div className="badge animate-slide-up" style={{ animationDelay: '0.1s' }}>
                         <span className="badge-dot"></span>
-                        Now Evaluating with GPT-4 Omni
+                        Now Evaluating with Gemini 3.1 Flash and LiquidAi 2.5
                     </div>
 
                     <h1 className="Desc-title animate-slide-up" style={{ animationDelay: '0.2s' }}>

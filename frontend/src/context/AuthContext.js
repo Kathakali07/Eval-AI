@@ -16,11 +16,16 @@ export const AuthProvider = ({ children }) => {
     const isAuthenticated = !!token;
 
     const login = async (email, password) => {
-        const res = await fetch(`${API_BASE}/api/auth/login`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password }),
-        });
+        let res;
+        try {
+            res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password }),
+            });
+        } catch (networkErr) {
+            throw new Error('Cannot connect to the server. Please make sure the backend is running.');
+        }
 
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));
@@ -36,11 +41,16 @@ export const AuthProvider = ({ children }) => {
     };
 
     const register = async (name, email, password) => {
-        const res = await fetch(`${API_BASE}/api/auth/register`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name, email, password }),
-        });
+        let res;
+        try {
+            res = await fetch(`${API_BASE}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, email, password }),
+            });
+        } catch (networkErr) {
+            throw new Error('Cannot connect to the server. Please make sure the backend is running.');
+        }
 
         if (!res.ok) {
             const err = await res.json().catch(() => ({}));

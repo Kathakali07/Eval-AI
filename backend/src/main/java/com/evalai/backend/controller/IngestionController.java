@@ -26,13 +26,36 @@ public class IngestionController {
     public ResponseEntity<?> uploadModelPaper(
             @RequestParam("file") MultipartFile modelPaperFile,
             @RequestParam("subjectArea") String subjectArea) {
+
+        if (modelPaperFile.isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("{\"status\": \"error\", \"message\": \"No file was uploaded. Please select a file and try again.\"}");
+        }
+
+        if (subjectArea == null || subjectArea.trim().isEmpty()) {
+            return ResponseEntity.badRequest()
+                    .body("{\"status\": \"error\", \"message\": \"Subject area is required. Please enter a subject and try again.\"}");
+        }
+
         try {
-            ingestionOrchestrator.processFullTeacherPaper(subjectArea, modelPaperFile);
+            ingestionOrchestrator.processFullTeacherPaper(subjectArea.trim(), modelPaperFile);
             return ResponseEntity.ok().body("{\"status\": \"success\"}");
-        } catch (Exception e) {
-            System.err.println("Ingestion failed: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body("{\"status\": \"error\", \"message\": \"" + e.getMessage() + "\"}");
+        } catch (RuntimeException e) {
+            String msg = e.getMessage() != null ? e.getMessage() : "An unknown error occurred.";
+            System.err.println("Ingestion failed: " + msg);
+
+            // Determine HTTP status based on error message content
+            HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
+            if (msg.contains("not running") || msg.contains("not configured")) {
+                status = HttpStatus.SERVICE_UNAVAILABLE;
+            } else if (msg.contains("rate limit")) {
+                status = HttpStatus.TOO_MANY_REQUESTS;
+            } else if (msg.contains("could not be read clearly") || msg.contains("rescan")) {
+                status = HttpStatus.valueOf(422);
+            }
+
+            return ResponseEntity.status(status)
+                    .body("{\"status\": \"error\", \"message\": \"" + msg.replace("\"", "'") + "\"}");
         }
     }
 }

@@ -91,15 +91,42 @@ const Dashboard = () => {
 
     const isReady = subjectArea.trim() && teacherFile && studentFile;
 
-    /** Authenticated fetch helper — injects Bearer token. */
-    const authFetch = (url, options = {}) => {
-        return fetch(url, {
-            ...options,
-            headers: {
-                ...options.headers,
-                'Authorization': `Bearer ${token}`,
-            },
-        });
+    /** Authenticated fetch helper — injects Bearer token and handles expiry. */
+    const authFetch = async (url, options = {}) => {
+        let res;
+        try {
+            res = await fetch(url, {
+                ...options,
+                headers: {
+                    ...options.headers,
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+        } catch (networkErr) {
+            // Network error — backend is probably not running
+            throw new Error('Unable to connect to the server. Please make sure the backend is running.');
+        }
+
+        // Token expired or invalid — log out gracefully
+        if (res.status === 401 || res.status === 403) {
+            logout();
+            throw new Error('Your session has expired. Please log in again.');
+        }
+
+        return res;
+    };
+    /** Extract a human-friendly message from an error response body. */
+    const parseErrorBody = async (res) => {
+        try {
+            const body = await res.json();
+            return body.message || body.detail || body.error || JSON.stringify(body);
+        } catch {
+            try {
+                return await res.text();
+            } catch {
+                return null;
+            }
+        }
     };
 
     /** Two-step sequential API chain: ingest model paper, then grade student paper. */
@@ -121,8 +148,8 @@ const Dashboard = () => {
             });
 
             if (!ingestRes.ok) {
-                const errText = await ingestRes.text();
-                throw new Error(errText || `Ingestion failed (HTTP ${ingestRes.status})`);
+                const errMsg = await parseErrorBody(ingestRes);
+                throw { status: ingestRes.status, message: errMsg || `Ingestion failed (HTTP ${ingestRes.status})` };
             }
 
             // Step 2: Grade student paper
@@ -137,14 +164,29 @@ const Dashboard = () => {
             });
 
             if (!gradeRes.ok) {
-                const errText = await gradeRes.text();
-                throw new Error(errText || `Grading failed (HTTP ${gradeRes.status})`);
+                const errMsg = await parseErrorBody(gradeRes);
+                throw { status: gradeRes.status, message: errMsg || `Grading failed (HTTP ${gradeRes.status})` };
             }
 
             const data = await gradeRes.json();
             setReportCard(data);
         } catch (err) {
-            setError(err.message || 'Connection failed. Please ensure the backend server is running.');
+            const msg = err.message || '';
+            const status = err.status || 0;
+            const msgLower = msg.toLowerCase();
+
+            if (msgLower.includes('session has expired')) {
+                // Already handled by authFetch (logout called)
+                return;
+            } else if (msgLower.includes('rescan') || msgLower.includes('could not be read clearly')) {
+                setError('RESCAN:' + msg);
+            } else if (status === 429 || msgLower.includes('rate limit')) {
+                setError('RATELIMIT:' + msg);
+            } else if (status === 503 || msgLower.includes('not running') || msgLower.includes('not configured') || msgLower.includes('unable to connect')) {
+                setError('OFFLINE:' + msg);
+            } else {
+                setError(msg || 'An unexpected error occurred. Please try again.');
+            }
         } finally {
             setIsProcessing(false);
             setProcessingStep(0);
@@ -223,18 +265,38 @@ const Dashboard = () => {
                 <div className="dash-orb orb-2"></div>
             </div>
 
-            {error && (
-                <div className="toast-container">
-                    <div className="toast toast-error animate-slide-down">
-                        <AlertCircle size={20} />
-                        <div className="toast-content">
-                            <span className="toast-title">Something went wrong</span>
-                            <span className="toast-message">{error}</span>
+            {error && (() => {
+                let toastClass = 'toast-error';
+                let title = 'Something went wrong';
+                let message = error;
+
+                if (error.startsWith('RESCAN:')) {
+                    toastClass = 'toast-warning';
+                    title = 'Document Not Clear Enough';
+                    message = error.slice(7);
+                } else if (error.startsWith('RATELIMIT:')) {
+                    toastClass = 'toast-warning';
+                    title = 'Rate Limit Reached';
+                    message = error.slice(10);
+                } else if (error.startsWith('OFFLINE:')) {
+                    toastClass = 'toast-info';
+                    title = 'Service Unavailable';
+                    message = error.slice(8);
+                }
+
+                return (
+                    <div className="toast-container">
+                        <div className={`toast ${toastClass} animate-slide-down`}>
+                            <AlertCircle size={20} />
+                            <div className="toast-content">
+                                <span className="toast-title">{title}</span>
+                                <span className="toast-message">{message}</span>
+                            </div>
+                            <button className="toast-close" onClick={() => setError(null)}><X size={16} /></button>
                         </div>
-                        <button className="toast-close" onClick={() => setError(null)}><X size={16} /></button>
                     </div>
-                </div>
-            )}
+                );
+            })()}
 
             {isProcessing && (
                 <div className="loading-overlay">
